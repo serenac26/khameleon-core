@@ -1,5 +1,5 @@
 # command: $make APP=appname
-# 				 e.g $ make APP=mosaic
+# 				 e.g $ make APP=gallery
 
 ifndef APP
 override APP = testapp

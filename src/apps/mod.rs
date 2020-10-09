@@ -3,6 +3,7 @@ use std::sync::{Arc, RwLock};
 
 // Available Apps
 pub mod testapp;
+pub mod gallery;
 
 use crate::ds;
 use crate::scheduler;
@@ -12,7 +13,8 @@ use crate::scheduler;
 ///          new function below, include match for the new type
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub enum AppType {
-    TestApp
+    TestApp,
+    Gallery
 }
 
 /// apps::new: function used by the manager to create app instance
@@ -21,6 +23,7 @@ pub enum AppType {
 pub fn new(appstate: &ds::AppState, config: serde_json::Value, _state_change_flag: Arc<RwLock<bool>>) -> Box<dyn AppTrait> {
     match appstate.appname {
         AppType::TestApp => Box::new(testapp::new( appstate, config )) as Box<dyn AppTrait>,
+        AppType::Gallery => Box::new(gallery::new( appstate, config )) as Box<dyn AppTrait>,
     }
 }
 
