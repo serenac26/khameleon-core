@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "module": "esnext",
+    "target": "es2017",
+    "outDir": "build",
+    "moduleResolution": "node",
+    "declaration": true,
+    "esModuleInterop": true,
+    "noImplicitAny": false,
+    "strictNullChecks": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "sourceMap": true,
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "incremental": true,
+    "typeRoots": [
+     "./node_modules/@types",
+     "./@types"
+   ]
+  },
+  "files": ["main/index.ts"],
+  "exclude": [
+        "node_modules"
+  ]
+}

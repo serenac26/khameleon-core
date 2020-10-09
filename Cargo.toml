@@ -1,0 +1,57 @@
+[package]
+name = "khameleon"
+version = "0.1.0"
+authors = ["Haneen Mohammed <hamohammed.sa@gmail.com>"]
+edition = "2018"
+
+[profile.release]
+overflow-checks = true
+
+[dependencies]
+actix = "0.8.0-alpha.2"
+actix-rt = "0.2.2"
+actix-files = "0.1.0-alpha.4"
+actix-web = { version="1.0.0-beta.4" }
+actix-web-actors = "1.0.0-alpha.3"
+actix-session = "0.1.0-alpha.4"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde_derive = "1.0"
+json = "*"
+
+image = "*"
+ndarray = { version = "0.12.1", features = ["serde-1"]}
+rand = "0.7.0"
+statrs = "0.11.0"
+
+bytes = "0.4.12"
+futures = "0.1.25"
+
+# debugging crates
+chrono = { version = "0.4", features = ["serde"] }
+log = "0.4.7"
+fern = { version = "0.5", features = ["colored"] }
+
+bincode = "*"
+base64 = "0.10.1"
+sled = "0.24.1"
+indexmap = "1.0.2"
+
+crossbeam = "0.7"
+crossbeam-utils = "0.6"
+#crossbeam-queue = "0.1.2"
+
+csv = "1.1.1"
+
+# $ sudo apt install coinor-cbc
+lp-modeler = "0.4.2"
+
+# for falcon app
+#odbc = "0.14.0" # this needs: apt-get install unixodbc-dev
+#google-bigquery2 = "1.0"
+#hyper = "0.10"
+#yup-oauth2 = "1.0"
+#hyper-native-tls = "0.3"
+#postgres = "0.15"
+#itertools = "0.8.0"
+#regex = "1"

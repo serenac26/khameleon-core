@@ -1,0 +1,56 @@
+{
+  "name": "khameleon",
+  "version": "1.0.0",
+  "description": "release version of Khameleon",
+  "author": {
+    "name": "Haneen"
+  },
+  "contributors": [
+    {
+      "name": "Haneen"
+    },
+    {
+      "name": "Ziyun Wei"
+    },
+    {
+      "name": "Eugene Wu"
+    }
+  ],
+  "main": "build/main/index.js",
+  "types": "build/main/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/cudbg/stream.git"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.4.3",
+    "@babel/plugin-transform-runtime": "^7.4.3",
+    "@babel/polyfill": "^7.4.3",
+    "@babel/preset-env": "^7.4.3",
+    "async": "2.1.4",
+    "browserify": "14.0.0",
+    "uglify-js": "2.4.0",
+    "underscore": "1.8.3",
+    "rollup": "^1.19.4",
+    "rollup-plugin-commonjs": "^10.0.2",
+    "rollup-plugin-json": "^4.0.0",
+    "rollup-plugin-node-resolve": "^5.2.0",
+    "rollup-plugin-node-builtins": "^2.1.2",
+    "typescript": "^3.4.1" 
+  },
+  "dependencies": {
+    "@types/d3": "^5.7.2",
+    "@types/jquery": "^3.3.31",
+    "@types/sylvester": "^0.1.6",
+    "async": "2.1.4",
+    "core-js": "2",
+    "dct": "0.0.3",
+    "gaussian": "^1.1.0",
+    "underscore": "1.8.3",
+    "lru-cache": "5.1.1"
+  },
+  "scripts": {
+    "build": "tsc && rollup -c",
+    "test": "./node_modules/.bin/vows"
+  }
+}
