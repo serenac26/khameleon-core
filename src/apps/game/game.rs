@@ -12,8 +12,6 @@ pub struct Game {
     utility: Vec<f32>,
     blocksize: usize,
     backend: backend::inmem::InMemBackend,
-    // don't know if need yet
-    // framenumber: u64,
 }
 
 /// appstate: specific data passed at initialization state from the client
@@ -28,7 +26,7 @@ pub fn new(_appstate: &ds::AppState, _config: serde_json::Value) -> Game {
         panic!("backend is not initialized {:?}", db_path);
     }
 
-    info!("2) create an index  of how many blocks/query");
+    info!("2) create an index of how many blocks/query");
     let blocks_per_query = backend.collect_blocks_per_query(Game::count_blocks);
     let blocksize = match backend.get_iter().next() {
         Some(Ok((_k, v))) => {
@@ -168,11 +166,11 @@ mod tests {
     use super::*;
 
     #[test]
-    // create kv store with single image data (key=R1) with blocks of size 20KB
+    // create kv store with single image data (key=0) with blocks of size 20KB
     // $ cargo test test_game_prepreocess_backend -- --nocapture
     fn test_game_preprocess_backend() {
         // probably should start testing with 1 block
-        // let blocksize = img.len()
+        // i.e. hard code to size of game frames
         let blocksize = 20*1024;
         let image_path = "data/img_5_30_11.jpg";
         let db_path = "data/game_data";
