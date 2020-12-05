@@ -5,13 +5,13 @@ interface RenderData {
   img_dir: any;
 };
 
-export class GameApp implements App {
+export class Game implements App {
  private engine: Engine;
- public appName: string = "GameApp";
+ public appName: string = "Game";
 
 
  constructor(private sysconfig) {
-  console.log("construct GameApp");
+  console.log("construct Game");
  }
 
  bindEngine(engine: Engine) {

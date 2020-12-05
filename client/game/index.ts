@@ -1,6 +1,6 @@
 
 import { Engine, KalmanFilter, ContinuesLogger } from "../khameleon-core";
-import { GameApp } from "../apps";  // import specific app
+import { Game } from "../apps";  // import specific app
 
 let config = {
  cachesize: 100,
@@ -23,7 +23,7 @@ config["cacheConfig"] = {
 };
 
 
-const app = new GameApp(config);
+const app = new Game(config);
 const engine = new Engine(app, predictor, config);
 engine.run();
 logger.start();
