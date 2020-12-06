@@ -5,17 +5,29 @@ extern crate base64;
 #[derive(Clone)]
 pub struct GameManager {
     gamename: String,
+    gameinstance: super::spingame::SpinningSquare,
 }
 
 impl GameManager {
-    pub fn new(dbname: String) -> Self {
+    pub fn new(gamename: String) -> Self {
         // initialize backend server
-        GameManager{gamename: dbname}
+        let gi = super::spingame::SpinningSquare::new();
+
+        GameManager{gamename: gamename, gameinstance: gi}
     }
+
+    // pub fn set(&self, )
 
     // get values stored at key @key
     // if it doesnt exist return None+ warning?
-    pub fn get(&self, key:usize) -> Option<Vec<u8>> {
-        None
+    pub fn get(&mut self, actions:Vec<usize>) {
+        for action in actions.iter() {
+            self.gameinstance.update(*action as u32);
+        }
+        self.gameinstance.render();
+        self.gameinstance.revert();
+
+        // TODO(Alex): Avoid write to intermediate file
     }
+
 }

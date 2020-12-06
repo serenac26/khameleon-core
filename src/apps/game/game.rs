@@ -158,39 +158,61 @@ impl AppTrait for Game {
             qid = qid % self.num_actions.pow(d - 1);
         }
         // TODO: simulate actions on parallel game instances and return frame as vec of blocks with index (tick|qid) encoded in each block
-        if let Some(blocks_bytes) = self.game_manager.get(index) {
-            let mut sblocks: Vec<ds::StreamBlock> = Vec::new();
-            let blocks: Vec<ImageBlock> = bincode::deserialize(&blocks_bytes).unwrap();
-            let nblocks: u32 = blocks.len() as u32;
+        self.game_manager.get(actions);
 
-            let end = if incache + count > blocks.len() { blocks.len() } else { incache + count };
-            for i in incache..end {
-                let block = &blocks[i];
-                let mut bytebuffer: Vec<u8> = Vec::new();
-                // start ring cache that checks if the client cache has already got rid of this
-                // block, should we send this block or a new one?
-                // for key and count and decision, construct the message to stream to the client
+        let mut file = std::fs::File::open("/tmp/square.png").unwrap();
+        let mut buffer = Vec::new();
+        file.read_to_end(&mut buffer).unwrap();
+        let img = buffer;
 
-                let mut block_byte = block.serialize();
-                let size: u32 = block_byte.len() as u32;
-                let mut block_id = bincode::serialize(&block.block_id).unwrap();
-                let mut nblock = bincode::serialize(&nblocks).unwrap();
-                let mut key_byte = bincode::serialize(&index).unwrap();
+        let mut blocks = Vec::new();
+        let mut start = 0;
 
-                bytebuffer.append( &mut block_id );
-                bytebuffer.append( &mut nblock );
-                bytebuffer.append( &mut key_byte );
-                bytebuffer.append( &mut block_byte );
-                info!("ImageBlock i {} {}, incache: {} nblocks: {:?} block#: {:?} size: {:?}, blocksize: {:?}",  i, index, incache,nblocks, block.block_id, bytebuffer.len(), size);
+        let blocksize = if self.blocksize > img.len() { img.len() } else { self.blocksize };
+        let mut end = blocksize;
 
-                sblocks.push(ds::StreamBlock::Binary(bytebuffer));
+        debug!("blocksize: {:?} end: {:?}", blocksize, end);
+        let mut bid = 0;
+
+        while end <= img.len() {
+            if end > img.len() {
+                end = img.len();
             }
 
-            Some(sblocks)
-        } else {
-            None
-        // TODO: Cache repeated results
+            blocks.push( ImageBlock{block_id: bid, content: img[start..end].to_vec()} );
+            bid += 1;
+            start = end;
+            end += blocksize;
         }
+
+        let mut sblocks: Vec<ds::StreamBlock> = Vec::new();
+        // let blocks: Vec<ImageBlock> = bincode::deserialize(&blocks_bytes).unwrap();
+        let nblocks: u32 = blocks.len() as u32;
+
+        let end = if incache + count > blocks.len() { blocks.len() } else { incache + count };
+        for i in incache..end {
+            let block = &blocks[i];
+            let mut bytebuffer: Vec<u8> = Vec::new();
+            // start ring cache that checks if the client cache has already got rid of this
+            // block, should we send this block or a new one?
+            // for key and count and decision, construct the message to stream to the client
+
+            let mut block_byte = block.serialize();
+            let size: u32 = block_byte.len() as u32;
+            let mut block_id = bincode::serialize(&block.block_id).unwrap();
+            let mut nblock = bincode::serialize(&nblocks).unwrap();
+            let mut key_byte = bincode::serialize(&index).unwrap();
+
+            bytebuffer.append( &mut block_id );
+            bytebuffer.append( &mut nblock );
+            bytebuffer.append( &mut key_byte );
+            bytebuffer.append( &mut block_byte );
+            info!("ImageBlock i {} {}, incache: {} nblocks: {:?} block#: {:?} size: {:?}, blocksize: {:?}",  i, index, incache,nblocks, block.block_id, bytebuffer.len(), size);
+
+            sblocks.push(ds::StreamBlock::Binary(bytebuffer));
+        }
+
+        Some(sblocks)
     }
 
     fn decode_dist(&mut self, userstate: ds::PredictorState) -> scheduler::Prob {
