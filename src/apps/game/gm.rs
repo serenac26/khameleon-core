@@ -2,16 +2,18 @@ extern crate image;
 use sled::{Db};
 extern crate base64;
 
+use super::spingame::{SpinningSquare};
+
 #[derive(Clone)]
 pub struct GameManager {
     gamename: String,
-    gameinstance: super::spingame::SpinningSquare,
+    gameinstance: SpinningSquare,
 }
 
 impl GameManager {
     pub fn new(gamename: String) -> Self {
         // initialize backend server
-        let gi = super::spingame::SpinningSquare::new();
+        let gi = SpinningSquare::new();
 
         GameManager{gamename: gamename, gameinstance: gi}
     }
