@@ -16,7 +16,10 @@ impl GameManager {
         GameManager{gamename: gamename, gameinstance: gi}
     }
 
-    // pub fn set(&self, )
+    pub fn set(&self, action: usize) {
+        self.gameinstance.update(*action as u32);
+        self.gameinstance.commit();
+    }
 
     // get values stored at key @key
     // if it doesnt exist return None+ warning?
