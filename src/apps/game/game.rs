@@ -12,6 +12,7 @@ pub struct Game {
     utility: Vec<f32>,
     blocksize: usize,
     backend: backend::inmem::InMemBackend,
+    game_manager: ,
 }
 
 /// appstate: specific data passed at initialization state from the client
@@ -100,8 +101,9 @@ impl Game {
 
         blocks
     }
-    
+
     fn get_nblocks_bytes(&self, key: &str, count: usize, incache: usize) -> Option::<Vec<ds::StreamBlock>> {
+        // TODO: remove this
         if let Some(blocks_bytes) = self.backend.get(key.as_bytes().to_vec()) {
             let mut sblocks: Vec<ds::StreamBlock> = Vec::new();
             let blocks: Vec<ImageBlock> = bincode::deserialize(&blocks_bytes).unwrap();
@@ -138,14 +140,46 @@ impl AppTrait for Game {
 
     fn get_nblocks_byindex(&mut self, index: usize, count: usize,
                            incache: usize) -> Option::<Vec<ds::StreamBlock>> {
-        let kv = self.blocks_per_query.get_index(index);
-        debug!("get {:?}", kv);
-        match kv {
-            Some((k, _)) => {
-                self.get_nblocks_bytes(k, count, incache)
-            },
-            None => None,
+
+        if let Some(blocks_bytes) = self.game_manager.get(index) {
+            let mut sblocks: Vec<ds::StreamBlock> = Vec::new();
+            let blocks: Vec<ImageBlock> = bincode::deserialize(&blocks_bytes).unwrap();
+            let nblocks: u32 = blocks.len() as u32;
+
+            let end = if incache + count > blocks.len() { blocks.len() } else { incache + count };
+            for i in incache..end {
+                if self.blockcount > 0 && sblocks.len() >= self.blockcount { // progressive: nblocks = 1
+                    break;
+                }
+
+                let block = &blocks[i];
+                let mut bytebuffer: Vec<u8> = Vec::new();
+                // start ring cache that checks if the client cache has already got rid of this
+                // block, should we send this block or a new one?
+                // for key and count and decision, construct the message to stream to the client
+
+                let mut block_byte = block.serialize();
+                let size: u32 = block_byte.len() as u32;
+                let mut block_id = bincode::serialize(&block.block_id).unwrap();
+                let mut nblock = bincode::serialize(&nblocks).unwrap();
+                let mut key_byte = bincode::serialize(&key).unwrap();
+
+                bytebuffer.append( &mut block_id );
+                bytebuffer.append( &mut nblock );
+                bytebuffer.append( &mut key_byte );
+                bytebuffer.append( &mut block_byte );
+                info!("ImageBlock i {} {}, incache: {} nblocks: {:?} block#: {:?} size: {:?}, blocksize: {:?}",  i, key, incache,nblocks, block.block_id, bytebuffer.len(), size);
+
+                sblocks.push(ds::StreamBlock::Binary(bytebuffer));
+            }
+
+            Some(sblocks)
+        } else {
+            None
         }
+
+
+        // TODO: Cache repeated results
     }
 
     fn decode_dist(&mut self, userstate: ds::PredictorState) -> scheduler::Prob {
