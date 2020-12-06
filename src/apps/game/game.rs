@@ -2,6 +2,7 @@ use serde_derive::{Deserialize, Serialize};
 use std::io::prelude::*;
 
 use super::AppTrait;
+use super::gm::{GameManager};
 use crate::ds;
 use crate::scheduler;
 use crate::backend;
@@ -12,7 +13,7 @@ pub struct Game {
     utility: Vec<f32>,
     blocksize: usize,
     backend: backend::inmem::InMemBackend,
-    game_manager: super::gm::GameManager,
+    game_manager: GameManager,
     future: u32,
     num_actions: usize
 }
@@ -50,7 +51,7 @@ pub fn new(_appstate: &ds::AppState, _config: serde_json::Value) -> Game {
     // should get num_actions from _appstate.state config
     let num_actions = 5 as usize;
 
-    let game_manager = super::gm::GameManager::new("spingame".to_owned());
+    let game_manager = GameManager::new("spingame".to_owned());
 
     Game{blocks_per_query, utility, blocksize, backend, game_manager, future, num_actions}
 }

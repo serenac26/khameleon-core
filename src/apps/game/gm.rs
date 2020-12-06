@@ -16,8 +16,8 @@ impl GameManager {
         GameManager{gamename: gamename, gameinstance: gi}
     }
 
-    pub fn set(&self, action: usize) {
-        self.gameinstance.update(*action as u32);
+    pub fn set(&mut self, action: usize) {
+        self.gameinstance.update(action as u32);
         self.gameinstance.commit();
     }
 
