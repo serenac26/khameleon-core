@@ -147,3 +147,29 @@ pub fn decode_model(dist: &serde_json::Value, layout_matrix: &Array2<f32>) -> Pr
         probs
 }
 
+pub fn decode_markov(dist: &serde_json::Value, future: u32, actions_n: usize, queries_n: usize, lastaction_id: usize, prob: &mut Prob) {
+    let mut tmatrix: Vec<Vec<serde_json::Value>> = Vec::new();
+    dist.as_array().unwrap().clone()
+        .into_iter()
+        .for_each(|v| tmatrix.push(v.as_array().unwrap().clone()));
+    let mut map: indexmap::IndexMap<usize, f32> = indexmap::IndexMap::new();
+    for i in 0..queries_n {
+        let mut qid = i;
+        // translate qid to sequence of future actions
+        let mut actions: Vec<usize> = Vec::new();
+        for d in future..0 {
+            actions.push(qid / actions_n.pow(d - 1));
+            qid = qid % actions_n.pow(d - 1);
+        }
+        // calculate probability of each sequence of actions
+        let mut p = 1.0;
+        let mut prevaction_id = lastaction_id;
+        for a in actions.into_iter() {
+            p *= tmatrix[prevaction_id][a].as_f64().unwrap();
+            prevaction_id = a;
+        }
+        // safe cast?
+        map.insert(qid, p as f32);
+    }
+    prob.set_probs_at(map, 0);
+}

@@ -150,10 +150,24 @@ impl AppTrait for Game {
 
     fn decode_dist(&mut self, userstate: ds::PredictorState) -> scheduler::Prob {
         debug!("decode_dist: {:?}", userstate);
-        let total_queries = 1;
-        let prob = scheduler::Prob::new(total_queries);
+        let future = 3;
+        let total_queries = 5usize.pow(future);
+        let mut prob = scheduler::Prob::new(total_queries);
+        match userstate.model.trim() {
+            "markov" => {
+                match userstate.data.as_object() {
+                    // obj is a 5x5 transition matrix
+                    Some(obj) => {
+                        let action_id = obj["action"].clone().as_u64().unwrap() as usize;
+                        // TODO (Alex): send action to game instances
+                        let dist = obj["dist"].clone();
+                        scheduler::decode_markov(&dist, future, 5, total_queries, action_id, &mut prob);
+                    }, _ => (),
+                }
+            },
+            _ => panic!("no match routine to decode this {}", userstate.model)
+        };
         prob
-
     }
 
     fn get_block_size(&self) -> usize {
