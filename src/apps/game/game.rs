@@ -12,6 +12,7 @@ pub struct Game {
     utility: Vec<f32>,
     blocksize: usize,
     backend: backend::inmem::InMemBackend,
+    game_manager: super::gm::GameManager,
     future: u32,
     num_actions: usize
 }
@@ -48,7 +49,10 @@ pub fn new(_appstate: &ds::AppState, _config: serde_json::Value) -> Game {
     let future = 3;
     // should get num_actions from _appstate.state config
     let num_actions = 5 as usize;
-    Game{blocks_per_query, utility, blocksize, backend, future, num_actions}
+
+    let game_manager = super::gm::GameManager::new("spingame".to_owned());
+
+    Game{blocks_per_query, utility, blocksize, backend, game_manager, future, num_actions}
 }
 
 // app specific
@@ -111,6 +115,7 @@ impl Game {
     // TODO: rewrite to take in sequence of actions and tick # as input
     // TODO: simulate actions on game instances and encode qid and tick into FrameBlock
     fn get_nblocks_bytes(&self, key: &str, count: usize, incache: usize) -> Option::<Vec<ds::StreamBlock>> {
+        // TODO: remove this
         if let Some(blocks_bytes) = self.backend.get(key.as_bytes().to_vec()) {
             let mut sblocks: Vec<ds::StreamBlock> = Vec::new();
             let blocks: Vec<FrameBlock> = bincode::deserialize(&blocks_bytes).unwrap();
@@ -157,15 +162,61 @@ impl AppTrait for Game {
             qid = qid % self.num_actions.pow(d - 1);
         }
         // TODO: simulate actions on parallel game instances and return frame as vec of blocks with index (tick|qid) encoded in each block
+        self.game_manager.get(actions);
 
-        let kv = self.blocks_per_query.get_index(index);
-        debug!("get {:?}", kv);
-        match kv {
-            Some((k, _)) => {
-                self.get_nblocks_bytes(k, count, incache)
-            },
-            None => None,
+        let mut file = std::fs::File::open("/tmp/square.png").unwrap();
+        let mut buffer = Vec::new();
+        file.read_to_end(&mut buffer).unwrap();
+        let img = buffer;
+
+        let mut blocks = Vec::new();
+        let mut start = 0;
+
+        let blocksize = if self.blocksize > img.len() { img.len() } else { self.blocksize };
+        let mut end = blocksize;
+
+        debug!("blocksize: {:?} end: {:?}", blocksize, end);
+        let mut bid = 0;
+
+        while end <= img.len() {
+            if end > img.len() {
+                end = img.len();
+            }
+
+            blocks.push( FrameBlock{block_id: bid, content: img[start..end].to_vec()} );
+            bid += 1;
+            start = end;
+            end += blocksize;
         }
+
+        let mut sblocks: Vec<ds::StreamBlock> = Vec::new();
+        // let blocks: Vec<FrameBlock> = bincode::deserialize(&blocks_bytes).unwrap();
+        let nblocks: u32 = blocks.len() as u32;
+
+        let end = if incache + count > blocks.len() { blocks.len() } else { incache + count };
+        for i in incache..end {
+            let block = &blocks[i];
+            let mut bytebuffer: Vec<u8> = Vec::new();
+            // start ring cache that checks if the client cache has already got rid of this
+            // block, should we send this block or a new one?
+            // for key and count and decision, construct the message to stream to the client
+
+            let mut block_byte = block.serialize();
+            let size: u32 = block_byte.len() as u32;
+            let mut block_id = bincode::serialize(&block.block_id).unwrap();
+            let mut nblock = bincode::serialize(&nblocks).unwrap();
+            let mut key_byte = bincode::serialize(&index).unwrap();
+
+            bytebuffer.append( &mut block_id );
+            bytebuffer.append( &mut nblock );
+            bytebuffer.append( &mut key_byte );
+            bytebuffer.append( &mut block_byte );
+            info!("FrameBlock i {} {}, incache: {} nblocks: {:?} block#: {:?} size: {:?}, blocksize: {:?}",  i, index, incache,nblocks, block.block_id, bytebuffer.len(), size);
+
+            sblocks.push(ds::StreamBlock::Binary(bytebuffer));
+        }
+
+        Some(sblocks)
     }
 
     fn decode_dist(&mut self, userstate: ds::PredictorState) -> scheduler::Prob {

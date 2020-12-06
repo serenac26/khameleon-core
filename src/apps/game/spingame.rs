@@ -1,6 +1,7 @@
 use graphics::*;
 use graphics_buffer::*;
 
+#[derive(Clone)]
 pub struct SpinningSquare {
     rotation: f64,  // Rotation for the square.
     x: f64,
@@ -10,7 +11,17 @@ pub struct SpinningSquare {
 
 // MODIFIED GAME ENGINE
 impl SpinningSquare {
-    fn render(&mut self) {
+    pub fn new() -> Self {
+        // initialize backend server
+        SpinningSquare {
+            rotation: 0.0,
+            x: 200.0,
+            y: 200.0,
+            last_x: 200.0, last_y: 200.0, last_rot: 0.0,
+        }
+    }
+
+    pub fn render(&mut self) {
 
         const BLACK: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
         const RED: [f32; 4] = [1.0, 0.0, 0.0, 1.0];
@@ -44,7 +55,7 @@ impl SpinningSquare {
         self.update(a3);
     }
 
-    fn update(&mut self, seq: u32) {
+    pub fn update(&mut self, seq: u32) {
         // Rotate 2 radians per second.
         self.rotation += 0.2;
 
@@ -62,13 +73,13 @@ impl SpinningSquare {
         }
     }
 
-    fn revert(&mut self) {
+    pub fn revert(&mut self) {
         self.x = self.last_x;
         self.y = self.last_y;
         self.rotation = self.last_rot;
     }
 
-    fn commit(&mut self) {
+    pub fn commit(&mut self) {
         self.last_x = self.x;
         self.last_y = self.y;
         self.last_rot = self.rotation;
