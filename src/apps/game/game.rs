@@ -32,7 +32,7 @@ pub fn new(_appstate: &ds::AppState, _config: serde_json::Value) -> Game {
     let blocks_per_query = backend.collect_blocks_per_query(Game::count_blocks);
     let blocksize = match backend.get_iter().next() {
         Some(Ok((_k, v))) => {
-            let value: Vec<ImageBlock> = bincode::deserialize(&v).unwrap();
+            let value: Vec<FrameBlock> = bincode::deserialize(&v).unwrap();
             let size = match value.iter().next() {
                 Some(v) => v.size(),
                 None => 0
@@ -53,12 +53,14 @@ pub fn new(_appstate: &ds::AppState, _config: serde_json::Value) -> Game {
 
 // app specific
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-struct ImageBlock {
+struct FrameBlock {
     block_id: u32,
+    // TODO: possibly use to encode tick # in frame block
+    // tick: u64,
     content: Vec<u8>,
 }
 
-impl ImageBlock {
+impl FrameBlock {
     fn serialize(&self) -> Vec<u8> {
         bincode::serialize(self).unwrap()
     }
@@ -71,13 +73,13 @@ impl ImageBlock {
 
 impl Game {
     fn count_blocks(v: &Vec<u8>) -> usize {
-        let value: Vec<ImageBlock> = bincode::deserialize(&v).unwrap();
+        let value: Vec<FrameBlock> = bincode::deserialize(&v).unwrap();
         let blocks_count = value.len();
 
         blocks_count
     }
 
-    fn create_blocks(fname: String, blocksize: usize) -> Vec<ImageBlock> {
+    fn create_blocks(fname: String, blocksize: usize) -> Vec<FrameBlock> {
         let mut file = std::fs::File::open(&fname).unwrap();
         let mut buffer = Vec::new();
         file.read_to_end(&mut buffer).unwrap();
@@ -97,7 +99,7 @@ impl Game {
                 end = img.len();
             }
 
-            blocks.push( ImageBlock{block_id: bid, content: img[start..end].to_vec()} );
+            blocks.push( FrameBlock{block_id: bid, content: img[start..end].to_vec()} );
             bid += 1;
             start = end;
             end += blocksize;
@@ -106,10 +108,12 @@ impl Game {
         blocks
     }
     
+    // TODO: rewrite to take in sequence of actions and tick # as input
+    // TODO: simulate actions on game instances and encode qid and tick into FrameBlock
     fn get_nblocks_bytes(&self, key: &str, count: usize, incache: usize) -> Option::<Vec<ds::StreamBlock>> {
         if let Some(blocks_bytes) = self.backend.get(key.as_bytes().to_vec()) {
             let mut sblocks: Vec<ds::StreamBlock> = Vec::new();
-            let blocks: Vec<ImageBlock> = bincode::deserialize(&blocks_bytes).unwrap();
+            let blocks: Vec<FrameBlock> = bincode::deserialize(&blocks_bytes).unwrap();
             let nblocks: u32 = blocks.len() as u32;
 
             let end = if incache + count > blocks.len() { blocks.len() } else { incache + count };
