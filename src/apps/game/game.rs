@@ -12,7 +12,9 @@ pub struct Game {
     utility: Vec<f32>,
     blocksize: usize,
     backend: backend::inmem::InMemBackend,
-    game_manager: ,
+    game_manager: GameManager,
+    future: u32,
+    num_actions: usize
 }
 
 /// appstate: specific data passed at initialization state from the client
@@ -44,7 +46,10 @@ pub fn new(_appstate: &ds::AppState, _config: serde_json::Value) -> Game {
 
     let max_blocks_count: usize = blocks_per_query.iter().map(|(_, v)| *v).max().unwrap_or_else(|| 0 );
     let utility: Vec<f32> = (0..max_blocks_count).enumerate().map(|(i, _)| (1.0 / max_blocks_count as f32)*(i as f32+1.0) ).collect();
-    Game{blocks_per_query, utility, blocksize, backend}
+    let future = 3;
+    // should get num_actions from _appstate.state config
+    let num_actions = 5 as usize;
+    Game{blocks_per_query, utility, blocksize, backend, future, num_actions}
 }
 
 // app specific
@@ -140,6 +145,25 @@ impl AppTrait for Game {
 
     fn get_nblocks_byindex(&mut self, index: usize, count: usize,
                            incache: usize) -> Option::<Vec<ds::StreamBlock>> {
+        // parse tick # and action sequence
+        let d = 10usize.pow(self.future);
+        let tick = index / d;
+        let mut qid = index % d;
+        let mut actions: Vec<usize> = Vec::new();
+        for d in self.future..0 {
+            actions.push(qid / self.num_actions.pow(d - 1));
+            qid = qid % self.num_actions.pow(d - 1);
+        }
+        // TODO: simulate actions on parallel game instances and return frame as vec of blocks with index (tick|qid) encoded in each block
+
+        let kv = self.blocks_per_query.get_index(index);
+        debug!("get {:?}", kv);
+        match kv {
+            Some((k, _)) => {
+                self.get_nblocks_bytes(k, count, incache)
+            },
+            None => None,
+        }
 
         if let Some(blocks_bytes) = self.game_manager.get(index) {
             let mut sblocks: Vec<ds::StreamBlock> = Vec::new();
@@ -176,16 +200,12 @@ impl AppTrait for Game {
             Some(sblocks)
         } else {
             None
-        }
-
-
         // TODO: Cache repeated results
     }
 
     fn decode_dist(&mut self, userstate: ds::PredictorState) -> scheduler::Prob {
         debug!("decode_dist: {:?}", userstate);
-        let future = 3;
-        let total_queries = 5usize.pow(future);
+        let total_queries = self.num_actions.pow(self.future);
         let mut prob = scheduler::Prob::new(total_queries);
         match userstate.model.trim() {
             "markov" => {
@@ -193,9 +213,10 @@ impl AppTrait for Game {
                     // obj is a 5x5 transition matrix
                     Some(obj) => {
                         let action_id = obj["action"].clone().as_u64().unwrap() as usize;
-                        // TODO (Alex): send action to game instances
+                        // TODO: send action to game instances
+                        let tick = obj["tick"].clone().as_u64().unwrap() + self.future as u64;
                         let dist = obj["dist"].clone();
-                        scheduler::decode_markov(&dist, future, 5, total_queries, action_id, &mut prob);
+                        scheduler::decode_markov(&dist, self.future, self.num_actions, total_queries, action_id, tick, &mut prob);
                     }, _ => (),
                 }
             },

@@ -147,7 +147,7 @@ pub fn decode_model(dist: &serde_json::Value, layout_matrix: &Array2<f32>) -> Pr
         probs
 }
 
-pub fn decode_markov(dist: &serde_json::Value, future: u32, actions_n: usize, queries_n: usize, lastaction_id: usize, prob: &mut Prob) {
+pub fn decode_markov(dist: &serde_json::Value, future: u32, actions_n: usize, queries_n: usize, lastaction_id: usize, tick: u64, prob: &mut Prob) {
     let mut tmatrix: Vec<Vec<serde_json::Value>> = Vec::new();
     dist.as_array().unwrap().clone()
         .into_iter()
@@ -169,7 +169,8 @@ pub fn decode_markov(dist: &serde_json::Value, future: u32, actions_n: usize, qu
             prevaction_id = a;
         }
         // safe cast?
-        map.insert(qid, p as f32);
+        let ticked_qid = tick as usize * 10usize.pow(future) + qid;
+        map.insert(ticked_qid, p as f32);
     }
     prob.set_probs_at(map, 0);
 }
