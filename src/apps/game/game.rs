@@ -12,7 +12,7 @@ pub struct Game {
     utility: Vec<f32>,
     blocksize: usize,
     backend: backend::inmem::InMemBackend,
-    game_manager: GameManager,
+    game_manager: super::gm::GameManager,
     future: u32,
     num_actions: usize
 }
@@ -49,7 +49,10 @@ pub fn new(_appstate: &ds::AppState, _config: serde_json::Value) -> Game {
     let future = 3;
     // should get num_actions from _appstate.state config
     let num_actions = 5 as usize;
-    Game{blocks_per_query, utility, blocksize, backend, future, num_actions}
+
+    let game_manager = super::gm::GameManager::new("spingame".to_owned());
+
+    Game{blocks_per_query, utility, blocksize, backend, game_manager, future, num_actions}
 }
 
 // app specific
@@ -155,16 +158,6 @@ impl AppTrait for Game {
             qid = qid % self.num_actions.pow(d - 1);
         }
         // TODO: simulate actions on parallel game instances and return frame as vec of blocks with index (tick|qid) encoded in each block
-
-        let kv = self.blocks_per_query.get_index(index);
-        debug!("get {:?}", kv);
-        match kv {
-            Some((k, _)) => {
-                self.get_nblocks_bytes(k, count, incache)
-            },
-            None => None,
-        }
-
         if let Some(blocks_bytes) = self.game_manager.get(index) {
             let mut sblocks: Vec<ds::StreamBlock> = Vec::new();
             let blocks: Vec<ImageBlock> = bincode::deserialize(&blocks_bytes).unwrap();
@@ -172,10 +165,6 @@ impl AppTrait for Game {
 
             let end = if incache + count > blocks.len() { blocks.len() } else { incache + count };
             for i in incache..end {
-                if self.blockcount > 0 && sblocks.len() >= self.blockcount { // progressive: nblocks = 1
-                    break;
-                }
-
                 let block = &blocks[i];
                 let mut bytebuffer: Vec<u8> = Vec::new();
                 // start ring cache that checks if the client cache has already got rid of this
@@ -186,13 +175,13 @@ impl AppTrait for Game {
                 let size: u32 = block_byte.len() as u32;
                 let mut block_id = bincode::serialize(&block.block_id).unwrap();
                 let mut nblock = bincode::serialize(&nblocks).unwrap();
-                let mut key_byte = bincode::serialize(&key).unwrap();
+                let mut key_byte = bincode::serialize(&index).unwrap();
 
                 bytebuffer.append( &mut block_id );
                 bytebuffer.append( &mut nblock );
                 bytebuffer.append( &mut key_byte );
                 bytebuffer.append( &mut block_byte );
-                info!("ImageBlock i {} {}, incache: {} nblocks: {:?} block#: {:?} size: {:?}, blocksize: {:?}",  i, key, incache,nblocks, block.block_id, bytebuffer.len(), size);
+                info!("ImageBlock i {} {}, incache: {} nblocks: {:?} block#: {:?} size: {:?}, blocksize: {:?}",  i, index, incache,nblocks, block.block_id, bytebuffer.len(), size);
 
                 sblocks.push(ds::StreamBlock::Binary(bytebuffer));
             }
@@ -201,6 +190,7 @@ impl AppTrait for Game {
         } else {
             None
         // TODO: Cache repeated results
+        }
     }
 
     fn decode_dist(&mut self, userstate: ds::PredictorState) -> scheduler::Prob {
