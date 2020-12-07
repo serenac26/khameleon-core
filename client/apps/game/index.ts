@@ -174,20 +174,25 @@ export class Game implements App {
             .attr("height", tile_dim)
             .attr("preserveAspectRatio", "xMidYMin slice")
             /* Draggable viewport */
-            
+
         d3.select("body")
             .on("keypress", function() {
-              var key = 0;
+              var key = 4;
               that.moved = true;
+              console.log(d3.event.keyCode)
               switch (d3.event.keyCode) {
-                case 87:
+                case 119:
                   key = 0; //w
-                case 65: //a
+                  break;
+                case 97: //a
                   key = 1;
-                case 83: //s
+                  break;
+                case 115: //s
                   key = 2;
-                case 68:
+                  break;
+                case 100: //d
                   key = 3;
+                  break;
               }
               that.lastMoves.push(key);
               //let query = (key);
