@@ -29,7 +29,7 @@ impl ILP {
     ///
     pub fn compute_big_u(probs : &super::Prob, total_queries: usize,
                      cachesize: usize, utility: &Array1<f32>, tm: Arc<RwLock<ds::TimeManager>>) -> Array3<f32> {
-        
+
         let tm = tm.read().unwrap();
         let max_blocks_per_query = utility.len();
         let mut big_u: Array3<f32> = Array3::zeros((total_queries, max_blocks_per_query + 1, cachesize));
@@ -47,7 +47,7 @@ impl ILP {
                     p -= p_sums[t+1];
                 }
             }
-            
+
             let mut g = utility.clone();
             let g = g.view_mut().into_shape((max_blocks_per_query, 1)).unwrap();
             let p_sums = p_sums.view_mut().into_shape((1, cachesize)).unwrap();
@@ -90,7 +90,7 @@ impl super::SchedulerTrait for ILP {
             }
             problem += sub_vars.sum().le(1);
         }
-        
+
         // avoid duplicating query's blocks; for each allocation,
         // only allocate unique blocks
         for q in 0..self.total_queries {
@@ -106,13 +106,13 @@ impl super::SchedulerTrait for ILP {
         //problem.write_lp("problem.lp");
         let solver = GurobiSolver::new();
         let result = solver.run(&problem);
-        
+
         let mut schedule_at_t: Vec<(usize, usize, usize)> = Vec::new();
         // assert that the solution == cachesize
         match result {
-            Ok((_, var_values)) => {
+            Ok(solution) => {
                 //println!("Status: {:?}", status);
-                for (name, &value) in var_values.iter() {
+                for (name, &value) in solution.results.iter() {
                     if value == 1.0 {
                         let mut tokens = name.split("_");
                         let _ = tokens.next();
@@ -129,7 +129,7 @@ impl super::SchedulerTrait for ILP {
             },
             Err(msg) => println!("{}", msg),
         }
-        
+
         // TODO: blocks should be scheduled from smaller to larger indices
         schedule_at_t.sort_by(|(_, _, t1), (_, _, t2)| t1.cmp(&t2));
         let schedule: Vec<usize> = schedule_at_t.iter().map(|&(qid, _, _)| qid).collect();

@@ -20,20 +20,20 @@ export class Engine extends EventEmitter {
 
       this.app = app;
       this.predictor = predictor;
-      this.predictor.on("onupdate", this.onUpdate.bind(this));
+      // this.predictor.on("onupdate", this.onUpdate.bind(this));
     }
 
     
     // binded to "onupdate" signal, which hints on new user state to be sent to the server
-    onUpdate() {
-      if (!window.running) return;
+    // onUpdate() {
+    //   if (!window.running) return;
 
-      let dists = this.predictor.serialize();
+    //   let dists = this.predictor.serialize();
 
-      if (dists) {
-        post_stringify("/post_dist", dists);
-      }
-    }
+    //   if (dists) {
+    //     post_stringify("/post_dist", dists);
+    //   }
+    // }
 
     // establish connection with the server
     async connect(appstate: {}, onopen, onmessage) {
