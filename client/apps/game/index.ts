@@ -20,15 +20,16 @@ export class Game implements App {
   private moved: boolean;
 
   constructor(private sysconfig) {
+    console.log("construct Game")
     this.factor = (sysconfig && sysconfig.factor) ? sysconfig.factor : 10;
     this.image_holder_dimension = (sysconfig && sysconfig.image_holder_dimension) ? sysconfig.image_holder_dimension : 800;
     this.tile_dimension = (sysconfig && sysconfig.tile_dimension) ? sysconfig.tile_dimension : 600;
     this.path = (sysconfig && sysconfig.path) ? sysconfig.path : "static/data/";
     this.time = 0;
-    this.lastMoves = [];
+    this.lastMoves = new Array<number>(0);
     this.moved = false;
 
-    this.dbname = (sysconfig && sysconfig.dbname) ? sysconfig.dbname : "db_default_f10";
+    this.dbname = (sysconfig && sysconfig.dbname) ? sysconfig.dbname : "game_data";
   }
 
     bindEngine(engine: Engine) {
@@ -50,6 +51,10 @@ export class Game implements App {
     }
 
     tick() {
+      console.log("start tick")
+      console.log(this.time)
+      console.log(this.lastMoves)
+      console.log(this.moved)
       if (this.lastMoves.length < 3) {
         this.time = this.time + 1;
         return;
@@ -72,10 +77,11 @@ export class Game implements App {
       this.sendQuery(qid); //query cache
       var serverQuery = {
         "time": this.time,
-        "last_action": this.lastMoves[this.lastMoves.length - 1],
-        "matrix": prob,
+        "action": this.lastMoves[this.lastMoves.length - 1],
+        "dist": prob,
       }
-      var dists = { model: "markov", data: serverQuery };
+      var dists = { model: "Markov", data: serverQuery };
+      console.log("send dist", dists)
       post_stringify("/post_dist", dists);
       this.time = this.time + 1;
     }
@@ -93,6 +99,7 @@ export class Game implements App {
     }
 
     sendQuery(data: number) {
+        console.log("send query", data)
         // wonder if we need this or we always sendquery
         if (this.prevData && this.prevData === data) {
             return;
@@ -153,7 +160,7 @@ export class Game implements App {
             .attr("width", tile_dim)
             .attr("height", tile_dim);
 
-        setInterval(this.tick, 100);
+        setInterval(this.tick.bind(this), 100);
 
         let that = this;
         small_view_svg.append("image")
@@ -167,6 +174,8 @@ export class Game implements App {
             .attr("height", tile_dim)
             .attr("preserveAspectRatio", "xMidYMin slice")
             /* Draggable viewport */
+            
+        d3.select("body")
             .on("keypress", function() {
               var key = 0;
               that.moved = true;
@@ -215,8 +224,6 @@ export class Game implements App {
     //console.log("storeData: ", key, block_id, nblocks);
     let decodedblock = {"block_id": block_id, "content": content };
     return decodedblock;
-
-    return undefined;
   }
 
   construct(req, blocks, nblocks) : Data {
