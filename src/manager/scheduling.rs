@@ -53,10 +53,12 @@ pub fn start(app: Arc<Mutex<Box<dyn apps::AppTrait>>>,
         }
         
         let start = Instant::now();
+        // debug!("try_recv");
         let decoded_dist = {
             match dist_rx.lock().unwrap().try_recv() {
                 Ok(dist) => {
                     // new distribution
+                    debug!("calling decode_dist");
                     let dist = app.lock().unwrap().decode_dist(dist);
                     decoded_dist_copy = dist.clone();
                     last_new_dist = Instant::now();
@@ -76,6 +78,7 @@ pub fn start(app: Arc<Mutex<Box<dyn apps::AppTrait>>>,
                        last_new_dist = Instant::now();
                        decoded_dist_copy.clone()
                    } else {
+                    //    debug!("continue");
                        continue
                    }
                 }

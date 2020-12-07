@@ -225,15 +225,18 @@ impl AppTrait for Game {
         let total_queries = self.num_actions.pow(self.future);
         let mut prob = scheduler::Prob::new(total_queries);
         match userstate.model.trim() {
-            "markov" => {
+            "Markov" => {
                 match userstate.data.as_object() {
                     // obj is a 5x5 transition matrix
                     Some(obj) => {
                         let action_id = obj["action"].clone().as_u64().unwrap() as usize;
+                        debug!("ACTION: {}", action_id);
                         // Send action to game instances
                         self.game_manager.set(action_id);
 
                         let tick = obj["tick"].clone().as_u64().unwrap() + self.future as u64;
+                        debug!("TICK: {}", tick);
+
                         let dist = obj["dist"].clone();
                         scheduler::decode_markov(&dist, self.future, self.num_actions, total_queries, action_id, tick, &mut prob);
                     }, _ => (),

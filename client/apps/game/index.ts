@@ -76,7 +76,7 @@ export class Game implements App {
       var qid = this.time * 1000 + num;
       this.sendQuery(qid); //query cache
       var serverQuery = {
-        "time": this.time,
+        "tick": this.time,
         "action": this.lastMoves[this.lastMoves.length - 1],
         "dist": prob,
       }
