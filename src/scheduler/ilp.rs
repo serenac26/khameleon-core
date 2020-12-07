@@ -110,9 +110,9 @@ impl super::SchedulerTrait for ILP {
         let mut schedule_at_t: Vec<(usize, usize, usize)> = Vec::new();
         // assert that the solution == cachesize
         match result {
-            Ok(solution) => {
+            Ok((_, var_values)) => {
                 //println!("Status: {:?}", status);
-                for (name, &value) in solution.results.iter() {
+                for (name, &value) in var_values.iter() {
                     if value == 1.0 {
                         let mut tokens = name.split("_");
                         let _ = tokens.next();
