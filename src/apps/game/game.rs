@@ -112,7 +112,7 @@ impl Game {
 
         blocks
     }
-    
+
     // TODO: rewrite to take in sequence of actions and tick # as input
     // TODO: simulate actions on game instances and encode qid and tick into FrameBlock
     fn get_nblocks_bytes(&self, key: &str, count: usize, incache: usize) -> Option::<Vec<ds::StreamBlock>> {
@@ -230,7 +230,9 @@ impl AppTrait for Game {
                     // obj is a 5x5 transition matrix
                     Some(obj) => {
                         let action_id = obj["action"].clone().as_u64().unwrap() as usize;
-                        // TODO: send action to game instances
+                        // Send action to game instances
+                        self.game_manager.set(action_id);
+
                         let tick = obj["tick"].clone().as_u64().unwrap() + self.future as u64;
                         let dist = obj["dist"].clone();
                         scheduler::decode_markov(&dist, self.future, self.num_actions, total_queries, action_id, tick, &mut prob);
