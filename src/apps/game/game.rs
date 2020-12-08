@@ -212,8 +212,8 @@ impl AppTrait for Game {
             let size: u32 = block_byte.len() as u32;
             let mut block_id = bincode::serialize(&block.block_id).unwrap();
             let mut nblock = bincode::serialize(&nblocks).unwrap();
-            let mut key_len = bincode::serialize(&(index_str.len() as u32)).unwrap();
-            let mut key_byte = bincode::serialize(&index_str).unwrap();
+            let mut key_len = bincode::serialize(&(index_str.len() as u64)).unwrap();
+            let mut key_byte = index_str.clone().into_bytes();
 
             bytebuffer.append( &mut block_id );
             bytebuffer.append( &mut nblock );
