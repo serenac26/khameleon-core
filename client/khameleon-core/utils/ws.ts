@@ -49,9 +49,15 @@ export class WS {
 
     // u64, assumption: key len is u32 so it doesnt overflow
     var key_len = new Uint32Array(buffer, offset, 1)[0];     offset += 8;
+    console.log("blockIdx: ", blockIdx);
+    console.log("blockid: ", blockid);
+    console.log("nblocks: ", nblocks);    
+    console.log("key_len: ", key_len);
     var keybuf = new Uint8Array(buffer, offset, key_len); offset += key_len;
+    console.log("keybuf: ", keybuf);
     var enc = new TextDecoder("utf-8");
     var key = enc.decode( keybuf );
+    console.log("key: ", key);
     
     // pass this to the application as a blob
     let blockbuffer = buffer.slice(offset, buffer.byteLength);

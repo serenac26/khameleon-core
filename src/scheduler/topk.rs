@@ -21,7 +21,7 @@ impl super::SchedulerTrait for TopKScheduler {
         qids.remove(&0);
         for qid in qids {
             plan.push(qid);
-            debug!("qid: {} with probability {}", qid, probs.get(qid, 0));
+            // debug!("qid: {} with probability {}", qid, probs.get(qid, 0));
         }
         plan.sort_by(|a, b| probs.get(*b, 0).partial_cmp(&probs.get(*a, 0)).unwrap_or(core::cmp::Ordering::Equal));
         plan[0..self.k].to_vec()

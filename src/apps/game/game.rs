@@ -1,5 +1,6 @@
 use serde_derive::{Deserialize, Serialize};
 use std::io::prelude::*;
+use std::mem::size_of;
 
 use super::AppTrait;
 use super::gm::{GameManager};
@@ -155,6 +156,8 @@ impl AppTrait for Game {
                            incache: usize) -> Option::<Vec<ds::StreamBlock>> {
         debug!("get_nblocks_byindex");
         // parse tick # and action sequence
+        let index_str = index.to_string();
+        debug!("index_str: {}", index_str);
         let d = 10usize.pow(self.future);
         let tick = index / d;
         let mut qid = index % d;
@@ -209,10 +212,12 @@ impl AppTrait for Game {
             let size: u32 = block_byte.len() as u32;
             let mut block_id = bincode::serialize(&block.block_id).unwrap();
             let mut nblock = bincode::serialize(&nblocks).unwrap();
-            let mut key_byte = bincode::serialize(&index).unwrap();
+            let mut key_len = bincode::serialize(&(index_str.len() as u32)).unwrap();
+            let mut key_byte = bincode::serialize(&index_str).unwrap();
 
             bytebuffer.append( &mut block_id );
             bytebuffer.append( &mut nblock );
+            bytebuffer.append( &mut key_len );
             bytebuffer.append( &mut key_byte );
             bytebuffer.append( &mut block_byte );
             info!("FrameBlock i {} {}, incache: {} nblocks: {:?} block#: {:?} size: {:?}, blocksize: {:?}",  i, index, incache,nblocks, block.block_id, bytebuffer.len(), size);
