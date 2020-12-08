@@ -153,13 +153,13 @@ pub fn decode_markov(dist: &serde_json::Value, future: u32, actions_n: usize, qu
         .into_iter()
         .for_each(|v| tmatrix.push(v.as_array().unwrap().clone()));
     let mut map: indexmap::IndexMap<usize, f32> = indexmap::IndexMap::new();
-    for i in 0..queries_n {
-        let mut qid = i;
+    for qid in 0..queries_n {
+        let mut i = qid;
         // translate qid to sequence of future actions
         let mut actions: Vec<usize> = Vec::new();
-        for d in future..0 {
-            actions.push(qid / actions_n.pow(d - 1));
-            qid = qid % actions_n.pow(d - 1);
+        for d in (0..future).rev() {
+            actions.push(i / actions_n.pow(d));
+            i = i % actions_n.pow(d);
         }
         // calculate probability of each sequence of actions
         let mut p = 1.0;
@@ -172,5 +172,6 @@ pub fn decode_markov(dist: &serde_json::Value, future: u32, actions_n: usize, qu
         let ticked_qid = tick as usize * 10usize.pow(future) + qid;
         map.insert(ticked_qid, p as f32);
     }
+    debug!("decoded dist: {:?}", map);
     prob.set_probs_at(map, 0);
 }

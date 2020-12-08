@@ -14,6 +14,7 @@
 
 pub mod greedy;
 pub mod ilp;
+pub mod topk;
 pub mod prob;
 pub mod decoders;
 
@@ -29,6 +30,7 @@ use std::sync::{Arc,  RwLock};
 pub enum SchedulerType {
     Greedy,
     ILP,
+    TopK
 }
 
 
@@ -62,6 +64,7 @@ pub fn new(&stype: &SchedulerType, batch: usize, cachesize: usize,
     match stype {
         SchedulerType::Greedy => Box::new( greedy::new(batch, cachesize, utility, blocks_per_query, tm) ) as Box<dyn SchedulerTrait>,
         SchedulerType::ILP => Box::new( ilp::new(cachesize, utility, total_queries, tm) ) as Box<dyn SchedulerTrait>,
+        SchedulerType::TopK => Box::new( topk::new(5) ) as Box<dyn SchedulerTrait>,
     }
 }
 

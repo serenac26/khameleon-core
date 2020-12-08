@@ -3,7 +3,7 @@ import { Engine, KalmanFilter, ContinuesLogger } from "../khameleon-core";
 import { Game } from "../apps";  // import specific app
 
 let config = {
- cachesize: 100,
+ cachesize: 125,
  cachetype: "ringIndex",
 
  // logger config

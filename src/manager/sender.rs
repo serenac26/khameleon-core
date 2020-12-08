@@ -80,9 +80,9 @@ pub fn start(app: Arc<Mutex<Box<dyn apps::AppTrait>>>,
             Some(&qid) => {
                 // get how many blocks in cache, and update cache
                 let incache = cache_sim.read().unwrap().get(qid);
-                let cache_start = Instant::now();
-                cache_sim.write().unwrap().add(qid);
-                let cache_update_time = cache_start.elapsed().as_millis() as u64;
+                // let cache_start = Instant::now();
+                // cache_sim.write().unwrap().add(qid);
+                // let cache_update_time = cache_start.elapsed().as_millis() as u64;
                 let retrieval_start = Instant::now();
                 let count = 1;
                 match app.lock().unwrap().get_nblocks_byindex(qid, count, incache) {
@@ -102,7 +102,8 @@ pub fn start(app: Arc<Mutex<Box<dyn apps::AppTrait>>>,
                             match w {
                                 Ok(_) => {
                                     total_blocks += 1;
-                                    debug!("sending took: {:?} retrieval: {:?} cache_update: {:?}", sending_start.elapsed(), retrieval_time, cache_update_time);
+                                    // debug!("sending took: {:?} retrieval: {:?} cache_update: {:?}", sending_start.elapsed(), retrieval_time, cache_update_time);
+                                    debug!("sending took: {:?} retrieval: {:?}", sending_start.elapsed(), retrieval_time);
                                     if sending_start.elapsed().as_millis() > 1 {
                                         error!("congestion {:?}", sending_start.elapsed());
                                     }

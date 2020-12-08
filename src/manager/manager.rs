@@ -525,7 +525,7 @@ impl Manager {
         let worker1 = thread::spawn(move || {
             let blocks_per_query :Vec<usize> = queries_blcount.iter().map(|(_k, &v)| v ).collect();
             let continues = false;
-            let schedtype = scheduler::SchedulerType::Greedy;
+            let schedtype = scheduler::SchedulerType::TopK;
             let time_to_converge = 300;
             let batch = 100;
             let sched = scheduler::new(&schedtype,
