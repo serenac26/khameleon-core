@@ -41,7 +41,7 @@ impl SpinningSquare {
         // Draw a box rotating around the middle of the screen.
         rectangle(RED, square, transform, &mut buffer);
 
-        buffer.save("square.png").unwrap();
+        buffer.save("/tmp/square.png").unwrap();
     }
 
     // TODO: updateN

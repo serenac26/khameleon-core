@@ -166,7 +166,7 @@ impl AppTrait for Game {
         // TODO: simulate actions on parallel game instances and return frame as vec of blocks with index (tick|qid) encoded in each block
         self.game_manager.get(actions);
         // TODO: remove this after finishing game manager get() or else the temp file accessed below won't exist
-        return None;
+        // return None;
 
         let mut file = std::fs::File::open("/tmp/square.png").unwrap();
         let mut buffer = Vec::new();
