@@ -172,6 +172,6 @@ pub fn decode_markov(dist: &serde_json::Value, future: u32, actions_n: usize, qu
         let ticked_qid = tick as usize * 10usize.pow(future) + qid;
         map.insert(ticked_qid, p as f32);
     }
-    debug!("decoded dist: {:?}", map);
+    // debug!("decoded dist: {:?}", map);
     prob.set_probs_at(map, 0);
 }

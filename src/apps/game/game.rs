@@ -238,12 +238,12 @@ impl AppTrait for Game {
                     // obj is a 5x5 transition matrix
                     Some(obj) => {
                         let action_id = obj["action"].clone().as_u64().unwrap() as usize;
-                        debug!("ACTION: {}", action_id);
+                        // debug!("ACTION: {}", action_id);
                         // Send action to game instances
                         self.game_manager.set(action_id);
 
                         let tick = obj["tick"].clone().as_u64().unwrap() + self.future as u64;
-                        debug!("TICK: {}", tick);
+                        // debug!("TICK: {}", tick);
 
                         let dist = obj["dist"].clone();
                         scheduler::decode_markov(&dist, self.future, self.num_actions, total_queries, action_id, tick, &mut prob);

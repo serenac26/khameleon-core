@@ -150,30 +150,6 @@ export class Game implements App {
             .attr("height", dim)
             .attr("preserveAspectRatio", "xMidYMin slice");
 
-        d3.select("body").append("div")
-            .style("left", 0)
-            .style("top", tile_dim+10+"px")
-            .style("position", "absolute")
-            .attr("id", "utility")
-            .style("width", tile_dim+"px")
-            .style("height", "100px")
-            .text("Utility X");
-
-        const small_view_svg = d3.select("body").append("div")
-            .style("left", "0px")
-            .style("top", "0px")
-            .style("width", tile_dim + "px")
-            .style("height", tile_dim + "px")
-            .style("border", "2px solid black")
-            .style("position", "absolute")
-            .append("svg");
-
-        /* Main View */
-        small_view_svg
-            .attr("id", "nav_map")
-            .attr("width", tile_dim)
-            .attr("height", tile_dim);
-
         setInterval(this.tick.bind(this), 100);
 
         let that = this;
