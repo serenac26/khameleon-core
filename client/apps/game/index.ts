@@ -177,18 +177,7 @@ export class Game implements App {
         setInterval(this.tick.bind(this), 100);
 
         let that = this;
-        small_view_svg.append("image")
-            .attr("href", (_) => {
-                return this.path + "tile.jpg";
-            })
-            .attr("id", "small")
-            .attr("x", 0)
-            .attr("y", 0)
-            .attr("width", tile_dim)
-            .attr("height", tile_dim)
-            .attr("preserveAspectRatio", "xMidYMin slice")
-            /* Draggable viewport */
-
+        
         d3.select("body")
             .on("keypress", function() {
               var key = 4;
@@ -201,7 +190,7 @@ export class Game implements App {
                 case 97: //a
                   key = 1;
                   break;
-                case 11: //s
+                case 115: //s
                   key = 2;
                   break;
                 case 100: //d

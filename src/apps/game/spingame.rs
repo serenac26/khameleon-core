@@ -63,10 +63,10 @@ impl SpinningSquare {
             self.y += -7.0;
         }
         else if seq == 1 {
-            self.y += 7.0;
+            self.x += -7.0;
         }
         else if seq == 2 {
-            self.x += -7.0;
+            self.y += 7.0;
         }
         else if seq == 3 {
             self.x += 7.0;
