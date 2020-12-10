@@ -1,2 +1,11 @@
 node_modules
 src/scheduler/ilp.rs
+Cargo.lock
+client/static
+client/build
+client/main
+data
+log
+manager_started.flag
+target
+yarn.lock
