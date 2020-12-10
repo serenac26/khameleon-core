@@ -19,8 +19,16 @@ export class Markov {
      * @param prevaction 
      */
     updatestate(action: number, prevaction: number) {
-        this._counts[prevaction][action]++;
-        this._margins[action]++;
+        var weight: number = 1;
+        if (prevaction == 4) {
+            if (action != 4) {
+                weight = 3;
+            } else {
+                weight = 0;
+            }
+        }
+        this._counts[prevaction][action] += weight;
+        this._margins[action] += weight;
         for (let i=0; i<this._nactions; i++) {
             for (let j=0; j<this._nactions; j++) {
                 this._tmatrix[i][j] = this._counts[i][j] / this._margins[j];
