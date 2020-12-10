@@ -13,7 +13,7 @@ export class Game implements App {
   private image_holder_dimension: number;
   private tile_dimension: number;
   private path: string;
-  private prevData: number | undefined = undefined;
+  private prevData: string | undefined = undefined;
   public appName: string = "Game";
   private dbname: string;
   private time: number;
@@ -86,8 +86,8 @@ export class Game implements App {
       var action = this.lastMoves[this.lastMoves.length - 1];
       var prevaction = this.lastMoves[this.lastMoves.length - 2];
       this.predictor.updatestate(action, prevaction);
-      var num = 1 + this.lastMoves[this.lastMoves.length - 1] + 5*this.lastMoves[this.lastMoves.length - 2] + 25 * this.lastMoves[this.lastMoves.length - 3];
-      var qid = this.time * 1000 + num;
+      var num = this.lastMoves[this.lastMoves.length - 1] + 5*this.lastMoves[this.lastMoves.length - 2] + 25 * this.lastMoves[this.lastMoves.length - 3];
+      var qid = (this.time * 1000 + num).toString();
       this.sendQuery(qid); //query cache
       var serverQuery = {
         "tick": this.time,
@@ -112,7 +112,7 @@ export class Game implements App {
       window.gsyslogger = new SystemLogger();
     }
 
-    sendQuery(data: number) {
+    sendQuery(data: string) {
         console.log("send query", data)
         // wonder if we need this or we always sendquery
         if (this.prevData && this.prevData === data) {
