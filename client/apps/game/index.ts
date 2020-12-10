@@ -83,10 +83,12 @@ export class Game implements App {
       else {
         this.moved = false;
       }
+      var tempMoves = this.lastMoves.slice(-2);
+      tempMoves = tempMoves.sort();
       var action = this.lastMoves[this.lastMoves.length - 1];
       var prevaction = this.lastMoves[this.lastMoves.length - 2];
       this.predictor.updatestate(action, prevaction);
-      var num = this.lastMoves[this.lastMoves.length - 1] + 5*this.lastMoves[this.lastMoves.length - 2] + 25 * this.lastMoves[this.lastMoves.length - 3];
+      var num = tempMoves[0] + 5*tempMoves[1] + 25 * tempMoves[2];
       var qid = (this.time * 1000 + num).toString();
       this.sendQuery(qid); //query cache
       var serverQuery = {
@@ -153,7 +155,7 @@ export class Game implements App {
         setInterval(this.tick.bind(this), 100);
 
         let that = this;
-        
+
         d3.select("body")
             .on("keypress", function() {
               var key = 4;
