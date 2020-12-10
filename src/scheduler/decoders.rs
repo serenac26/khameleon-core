@@ -161,6 +161,11 @@ pub fn decode_markov(dist: &serde_json::Value, future: u32, actions_n: usize, qu
             actions.push(i / actions_n.pow(d));
             i = i % actions_n.pow(d);
         }
+        actions.sort();
+        let mut sorted_qid = 0;
+        for d in 0..future {
+            sorted_qid += actions_n.pow(future - 1 - d) * actions[d as usize];
+        }
         // calculate probability of each sequence of actions
         let mut p = 1.0;
         let mut prevaction_id = lastaction_id;
@@ -169,7 +174,7 @@ pub fn decode_markov(dist: &serde_json::Value, future: u32, actions_n: usize, qu
             prevaction_id = a;
         }
         // safe cast?
-        let ticked_qid = tick as usize * 10usize.pow(future) + qid;
+        let ticked_qid = tick as usize * 10usize.pow(future) + sorted_qid;
         map.insert(ticked_qid, p as f32);
     }
     // debug!("decoded dist: {:?}", map);
