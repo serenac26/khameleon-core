@@ -175,7 +175,12 @@ pub fn decode_markov(dist: &serde_json::Value, future: u32, actions_n: usize, qu
         }
         // safe cast?
         let ticked_qid = tick as usize * 10usize.pow(future) + sorted_qid;
-        map.insert(ticked_qid, p as f32);
+        let new_p = match map.get(&ticked_qid) {
+            Some(prev_p) => {
+                prev_p + p as f32
+            }, _ => {p as f32}
+        };
+        map.insert(ticked_qid, new_p);
     }
     // debug!("decoded dist: {:?}", map);
     prob.set_probs_at(map, 0);
