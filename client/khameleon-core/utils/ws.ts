@@ -51,7 +51,7 @@ export class WS {
     var key_len = new Uint32Array(buffer, offset, 1)[0];     offset += 8;
     console.log("blockIdx: ", blockIdx);
     console.log("blockid: ", blockid);
-    console.log("nblocks: ", nblocks);    
+    console.log("nblocks: ", nblocks);
     console.log("key_len: ", key_len);
     var keybuf = new Uint8Array(buffer, offset, key_len); offset += key_len;
     console.log("keybuf: ", keybuf);

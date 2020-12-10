@@ -233,7 +233,7 @@ impl AppTrait for Game {
         let total_queries = self.num_actions.pow(self.future);
         let mut prob = scheduler::Prob::new(total_queries);
         match userstate.model.trim() {
-            "Markov" => {
+            "MM" => {
                 match userstate.data.as_object() {
                     // obj is a 5x5 transition matrix
                     Some(obj) => {

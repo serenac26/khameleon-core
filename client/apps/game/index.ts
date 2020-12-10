@@ -1,4 +1,5 @@
-import { App, Engine, Data, post_stringify, SystemLogger  } from "../../khameleon-core";
+import { App, Engine, Data, post_stringify, SystemLogger, DistModel  } from "../../khameleon-core";
+import { Markov } from "../../khameleon-core/predictor/markov";
 import * as d3 from "d3";
 import * as _ from 'underscore';
 interface RenderData {
@@ -17,6 +18,7 @@ export class Game implements App {
   private dbname: string;
   private time: number;
   private lastMoves: Array<number>;
+  private predictor: Markov;
   private moved: boolean;
 
   constructor(private sysconfig) {
@@ -28,6 +30,22 @@ export class Game implements App {
     this.time = 0;
     this.lastMoves = new Array<number>(0);
     this.moved = false;
+    var tmatrix_0 = [
+      [0.6, 0.1, 0.1, 0.1, 0.1],
+      [0.1, 0.6, 0.1, 0.1, 0.1],
+      [0.1, 0.1, 0.6, 0.1, 0.1],
+      [0.1, 0.1, 0.1, 0.6, 0.1],
+      [0.1, 0.1, 0.1, 0.1, 0.6]
+    ];
+    var counts_0 = [
+      [6, 1, 1, 1, 1],
+      [1, 6, 1, 1, 1],
+      [1, 1, 6, 1, 1],
+      [1, 1, 1, 6, 1],
+      [1, 1, 1, 1, 6]
+    ];
+    var margins_0 = [10, 10, 10, 10, 10];
+    this.predictor = new Markov(5, tmatrix_0, counts_0, margins_0);
 
     this.dbname = (sysconfig && sysconfig.dbname) ? sysconfig.dbname : "game_data";
   }
@@ -65,22 +83,18 @@ export class Game implements App {
       else {
         this.moved = false;
       }
-      var prob = [
-        [1, 0, 0, 0, 0],
-        [0, 1, 0, 0, 0],
-        [0, 0, 1, 0, 0],
-        [0, 0, 0, 1, 0],
-        [0, 0, 0, 0, 1]
-      ];
+      var action = this.lastMoves[this.lastMoves.length - 1];
+      var prevaction = this.lastMoves[this.lastMoves.length - 2];
+      this.predictor.updatestate(action, prevaction);
       var num = 1 + this.lastMoves[this.lastMoves.length - 1] + 5*this.lastMoves[this.lastMoves.length - 2] + 25 * this.lastMoves[this.lastMoves.length - 3];
       var qid = this.time * 1000 + num;
       this.sendQuery(qid); //query cache
       var serverQuery = {
         "tick": this.time,
-        "action": this.lastMoves[this.lastMoves.length - 1],
-        "dist": prob,
+        "action": action,
+        "dist": this.predictor.getdistribution(),
       }
-      var dists = { model: "Markov", data: serverQuery };
+      var dists = { model: DistModel.Markov, data: serverQuery };
       console.log("send dist", dists)
       post_stringify("/post_dist", dists);
       this.time = this.time + 1;
@@ -187,7 +201,7 @@ export class Game implements App {
                 case 97: //a
                   key = 1;
                   break;
-                case 115: //s
+                case 11: //s
                   key = 2;
                   break;
                 case 100: //d

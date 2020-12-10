@@ -6,6 +6,7 @@ export enum DistModel {
   Dictionary = "DM", // dictionary model
   // mix of gaussian and point dist
   LinearGP = "LGP", // linear gaussian point
+  Markov = "MM",
 }
 
 export interface Prediction {
