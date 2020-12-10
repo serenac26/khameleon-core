@@ -83,12 +83,13 @@ export class Game implements App {
       else {
         this.moved = false;
       }
-      var tempMoves = this.lastMoves.slice(-2);
-      tempMoves = tempMoves.sort();
+      var tempMoves = this.lastMoves.slice(-3);
+      tempMoves.sort();
       var action = this.lastMoves[this.lastMoves.length - 1];
       var prevaction = this.lastMoves[this.lastMoves.length - 2];
       this.predictor.updatestate(action, prevaction);
-      var num = tempMoves[0] + 5*tempMoves[1] + 25 * tempMoves[2];
+      var num = 25 * tempMoves[0] + 5*tempMoves[1] + tempMoves[2];
+      console.log("NUM IS " + num);
       var qid = (this.time * 1000 + num).toString();
       this.sendQuery(qid); //query cache
       var serverQuery = {
