@@ -162,11 +162,12 @@ impl AppTrait for Game {
         let tick = index / d;
         let mut qid = index % d;
         let mut actions: Vec<usize> = Vec::new();
-        for d in self.future..0 {
-            actions.push(qid / self.num_actions.pow(d - 1));
-            qid = qid % self.num_actions.pow(d - 1);
+        for d in (0..self.future).rev() {
+            actions.push(qid / self.num_actions.pow(d));
+            qid = qid % self.num_actions.pow(d);
         }
         // TODO: simulate actions on parallel game instances and return frame as vec of blocks with index (tick|qid) encoded in each block
+        debug!("THE ACTIONS ARE: {:?}", actions);
         self.game_manager.get(actions);
         // TODO: remove this after finishing game manager get() or else the temp file accessed below won't exist
         // return None;
