@@ -9,13 +9,13 @@ interface RenderData {
 
 export class Game implements App {
   private engine: Engine;
-  private factor: number;
   private image_holder_dimension: number;
   private tile_dimension: number;
   private path: string;
   private prevData: string | undefined = undefined;
   public appName: string = "Game";
-  private dbname: string;
+  private future: number;
+  private nactions: number;
   private time: number;
   private lastMoves: Array<number>;
   private predictor: Markov;
@@ -23,10 +23,11 @@ export class Game implements App {
 
   constructor(private sysconfig) {
     console.log("construct Game")
-    this.factor = (sysconfig && sysconfig.factor) ? sysconfig.factor : 10;
     this.image_holder_dimension = (sysconfig && sysconfig.image_holder_dimension) ? sysconfig.image_holder_dimension : 800;
     this.tile_dimension = (sysconfig && sysconfig.tile_dimension) ? sysconfig.tile_dimension : 600;
     this.path = (sysconfig && sysconfig.path) ? sysconfig.path : "static/data/";
+    this.future = 2;
+    this.nactions = 5;
     this.time = 0;
     this.lastMoves = new Array<number>(0);
     this.moved = false;
@@ -45,9 +46,7 @@ export class Game implements App {
       [1, 1, 1, 1, 6]
     ];
     var margins_0 = [10, 10, 10, 10, 10];
-    this.predictor = new Markov(5, tmatrix_0, counts_0, margins_0);
-
-    this.dbname = (sysconfig && sysconfig.dbname) ? sysconfig.dbname : "game_data";
+    this.predictor = new Markov(this.nactions, tmatrix_0, counts_0, margins_0);
   }
 
     bindEngine(engine: Engine) {
@@ -55,9 +54,8 @@ export class Game implements App {
     }
 
     getState() {
-     let appstate =  { "dbname": this.dbname,
-                       "factor": this.factor,
-                       "dimension": this.tile_dimension
+     let appstate =  { "future": this.future,
+                       "nactions": this.nactions
      };
 
       let state=  { "appname": this.appName,
@@ -73,7 +71,7 @@ export class Game implements App {
       console.log(this.time)
       console.log(this.lastMoves)
       console.log(this.moved)
-      if (this.lastMoves.length < 3) {
+      if (this.lastMoves.length < this.future) {
         this.time = this.time + 1;
         return;
       }
@@ -83,14 +81,17 @@ export class Game implements App {
       else {
         this.moved = false;
       }
-      var tempMoves = this.lastMoves.slice(-3);
+      var tempMoves = this.lastMoves.slice(-this.future);
       tempMoves.sort();
       var action = this.lastMoves[this.lastMoves.length - 1];
       var prevaction = this.lastMoves[this.lastMoves.length - 2];
       this.predictor.updatestate(action, prevaction);
-      var num = 25 * tempMoves[0] + 5*tempMoves[1] + tempMoves[2];
+      var num = 0;
+      for (let i=0; i<this.future; i++) {
+        num += Math.pow(this.nactions, this.future - 1 - i) * tempMoves[i];
+      }
       console.log("NUM IS " + num);
-      var qid = (this.time * 1000 + num).toString();
+      var qid = (this.time * Math.pow(10, this.future) + num).toString();
       this.sendQuery(qid); //query cache
       var serverQuery = {
         "tick": this.time,

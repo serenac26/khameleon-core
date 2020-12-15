@@ -48,10 +48,10 @@ pub fn new(_appstate: &ds::AppState, _config: serde_json::Value) -> Game {
 
     let max_blocks_count: usize = blocks_per_query.iter().map(|(_, v)| *v).max().unwrap_or_else(|| 0 );
     let utility: Vec<f32> = (0..max_blocks_count).enumerate().map(|(i, _)| (1.0 / max_blocks_count as f32)*(i as f32+1.0) ).collect();
-    let future = 3;
-    // should get num_actions from _appstate.state config
-    let num_actions = 5 as usize;
-
+    let (future, num_actions): (u32, usize) = match _appstate.state.as_object() {
+        Some(obj) => (obj["future"].clone().as_u64().unwrap() as u32, obj["nactions"].clone().as_u64().unwrap() as usize),
+        _ => (3, 5)
+    };
     let game_manager = GameManager::new("spingame".to_owned());
 
     Game{blocks_per_query, utility, blocksize, backend, game_manager, future, num_actions}
