@@ -26,7 +26,7 @@ export class Game implements App {
     this.image_holder_dimension = (sysconfig && sysconfig.image_holder_dimension) ? sysconfig.image_holder_dimension : 800;
     this.tile_dimension = (sysconfig && sysconfig.tile_dimension) ? sysconfig.tile_dimension : 600;
     this.path = (sysconfig && sysconfig.path) ? sysconfig.path : "static/data/";
-    this.future = 2;
+    this.future = 3;
     this.nactions = 5;
     this.time = 0;
     this.lastMoves = new Array<number>(0);
@@ -92,6 +92,19 @@ export class Game implements App {
       }
       console.log("NUM IS " + num);
       var qid = (this.time * Math.pow(10, this.future) + num).toString();
+      // FOR TESTING ONLY
+      // @Harrison vary the accuracy across .2, .4, .6, .8, 1.0
+      var accuracy = 0.2;
+      var rand = Math.random();
+      if (rand < accuracy) {
+        // no action frame, always returned
+        // ensure cache hit
+        qid = (this.time * Math.pow(10, this.future) + Math.pow(this.nactions, this.future) - 1).toString();
+      } else {
+        // force cache miss
+        qid = "";
+      }
+      // END TESTING BLOCK
       this.sendQuery(qid); //query cache
       var serverQuery = {
         "tick": this.time,

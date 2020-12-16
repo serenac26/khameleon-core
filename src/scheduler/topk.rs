@@ -25,7 +25,14 @@ impl super::SchedulerTrait for TopKScheduler {
         }
         plan.sort_by(|a, b| probs.get(*b, 0).partial_cmp(&probs.get(*a, 0)).unwrap_or(core::cmp::Ordering::Equal));
         plan = plan[0..self.k].to_vec();
+        // for future = 4
+        // plan.push(plan[0] - (plan[0] % 1000) + 624);
+        // for future = 3
         plan.push(plan[0] - (plan[0] % 1000) + 124);
+        // for future = 2
+        // plan.push(plan[0] - (plan[0] % 100) + 24);
+        // for future = 1
+        // plan.push(plan[0] - (plan[0] % 10) + 4);
         debug!("schedule: {:?}", plan);
         plan
     }
